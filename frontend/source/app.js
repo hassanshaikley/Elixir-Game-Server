@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
-import React from 'react';
-import { Text } from 'ink';
+import React, { useEffect } from 'react';
+import { Text, useInput } from 'ink';
 import dgram from 'dgram'
 import { render } from 'ink';
+import { World } from './world.js';
+
+const localPlayer = { name: "Some Guy", id: "123", x: 0, z: 0 }
 
 export default function App({ name = 'Stranger' }) {
 	var s = dgram.createSocket('udp4');
@@ -22,10 +25,29 @@ export default function App({ name = 'Stranger' }) {
 		console.log(parsed)
 	})
 
+	const players = [localPlayer]
+
+
+	useInput((input, key) => {
+
+		if (input === 'q') {
+			// Exit program
+		}
+
+		if (key === 'd') {
+			localPlayer.x += 1
+		}
+	});
+
+	console.log("Re rendering")
+
+
+
+
+
+
 	return (
-		<Text>
-			Hello, <Text color="green">{name}</Text> I just sent a UDP Packet.
-		</Text>
+		<World players={players} />
 	);
 }
 
