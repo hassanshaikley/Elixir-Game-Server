@@ -28,16 +28,19 @@ defmodule UdpServer do
 
     :gen_udp.send(state.socket, address, port, "hello") |> IO.inspect(label: :sending)
 
-    handle_packet(data, state.socket)
+    state
+    |> Map.put(:address, address)
+    |> Map.put(:port, port)
+    |> handle_packet(data)
   end
 
   ### ALERT: you may not want to support the quit message in a production UDP server ###
   # pattern match the "quit" message
-  defp handle_packet("quit\n", socket) do
+  defp handle_packet(state, "quit\n") do
     IO.puts("Received: quit. Closing down...")
 
     # close the socket
-    :gen_udp.close(socket)
+    :gen_udp.close(state.socket)
 
     # GenServer will understand this to mean we want to stop the server
     # action: :stop
@@ -47,16 +50,16 @@ defmodule UdpServer do
   end
 
   # fallback pattern match to handle all other (non-"quit") messages
-  defp handle_packet(data, socket) do
+  defp handle_packet(state, data) do
     # print the message
     IO.puts("Received: #{String.trim(data)}")
-    :gen_udp.send(socket, "hello") |> IO.inspect(label: :sending)
+    :gen_udp.send(state.socket, "hello") |> IO.inspect(label: :sending)
     # IRL: do something more interesting...
 
     # GenServer will understand this to mean "continue waiting for the next message"
     # parameters:
     # :noreply - no reply is needed
     # new_state: keep the socket as the current state
-    {:noreply, socket}
+    {:noreply, state}
   end
 end
