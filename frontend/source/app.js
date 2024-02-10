@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 
-import React, { useEffect } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { Text, useInput } from 'ink';
 import dgram from 'dgram'
 import { render } from 'ink';
 import { World } from './world.js';
+import { Provider, useDispatch, useSelector } from 'react-redux'
+import store from './store.js';
+import { increment } from './counterSlice.js';
+
+
 
 const localPlayer = { name: "Some Guy", id: "123", x: 0, z: 0 }
 
@@ -27,6 +32,9 @@ export default function App({ name = 'Stranger' }) {
 
 	const players = [localPlayer]
 
+	const count = useSelector((state) => state.counter.value)
+	const dispatch = useDispatch()
+
 
 	useInput((input, key) => {
 
@@ -34,8 +42,9 @@ export default function App({ name = 'Stranger' }) {
 			// Exit program
 		}
 
-		if (key === 'd') {
-			localPlayer.x += 1
+		if (input === 'd') {
+
+			dispatch(increment())
 		}
 	});
 
@@ -47,7 +56,11 @@ export default function App({ name = 'Stranger' }) {
 
 
 	return (
-		<World players={players} />
+		<Fragment>
+			<Text>{count}</Text>
+			<World players={players} />
+
+		</Fragment>
 	);
 }
 
@@ -55,4 +68,7 @@ export default function App({ name = 'Stranger' }) {
 
 
 
-render(<App />);
+render(
+	<Provider store={store}>
+		<App />
+	</Provider>);
