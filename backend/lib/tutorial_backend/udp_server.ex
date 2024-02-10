@@ -8,7 +8,6 @@ defmodule UdpServer do
   def start_link(port \\ 5355) do
     # Start 'er up
     GenServer.start_link(__MODULE__, port)
-    |> IO.inspect(label: ~c"start_link/1")
   end
 
   # Initialization that runs in the server context (inside the server process right after it boots)
@@ -26,7 +25,7 @@ defmodule UdpServer do
   def handle_info({:udp, _socket, address, port, data}, state) do
     # punt the data to a new function that will do pattern matching
 
-    :gen_udp.send(state.socket, address, port, "hello") |> IO.inspect(label: :sending)
+    :gen_udp.send(state.socket, address, port, "hello wello") |> IO.inspect(label: :sending)
 
     state
     |> Map.put(:address, address)
@@ -53,7 +52,10 @@ defmodule UdpServer do
   defp handle_packet(state, data) do
     # print the message
     IO.puts("Received: #{String.trim(data)}")
-    :gen_udp.send(state.socket, "hello") |> IO.inspect(label: :sending)
+
+    :gen_udp.send(state.socket, state.address, state.port, "hello 2")
+    |> IO.inspect(label: :sending)
+
     # IRL: do something more interesting...
 
     # GenServer will understand this to mean "continue waiting for the next message"
