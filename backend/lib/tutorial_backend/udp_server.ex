@@ -20,30 +20,30 @@ defmodule UdpServer do
     # Returns: {:ok, socket}
     {:ok, socket} = :gen_udp.open(port, [:binary, active: true])
 
-    PubSub.subscribe(:my_pubsub, "user:123")
-
     {:ok, %{socket: socket}}
-  end
-
-  def handle_info(message, state) when is_binary(message) do
-    :gen_udp.send(state.socket, state.address, state.port, message)
-
-    {:noreply, state}
   end
 
   # define a callback handler for when gen_udp sends us a UDP packet
   def handle_info({:udp, _socket, address, port, data}, state) do
     # punt the data to a new function that will do pattern matching
 
-    :gen_udp.send(state.socket, address, port, "hello wello") |> IO.inspect(label: :sending)
-    IO.puts("Broadcasting")
-    PubSub.broadcast(:my_pubsub, "user:123", "Hell you said something")
+    :gen_udp.send(state.socket, address, port, %{some: "data"}) |> IO.inspect(label: :sending)
+
+    socket_id = generate_socket_id()
+
+    PubSub.subscribe(:my_pubsub, "user:#{socket_id}")
 
     state
     |> Map.put(:address, address)
     |> Map.put(:port, port)
+    |> Map.put(:socket_id, socket_id)
     |> handle_packet(data)
-    |> IO.inspect(label: :setting_state)
+  end
+
+  def handle_info(message, state) do
+    :gen_udp.send(state.socket, state.address, state.port, message)
+
+    {:noreply, state}
   end
 
   ### ALERT: you may not want to support the quit message in a production UDP server ###
@@ -66,9 +66,12 @@ defmodule UdpServer do
     # print the message
     IO.puts("Received: #{String.trim(data)}")
 
-    :gen_udp.send(state.socket, state.address, state.port, "hello 2")
-    |> IO.inspect(label: :sending)
+    :gen_udp.send(state.socket, state.address, state.port, Jason.encode!(%{hello: "world"}))
 
     {:noreply, state}
+  end
+
+  defp generate_socket_id do
+    to_string(:erlang.ref_to_list(:erlang.make_ref())) |> String.slice(5..-2//1)
   end
 end

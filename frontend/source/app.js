@@ -15,8 +15,7 @@ export default function App({ name = 'Stranger' }) {
 		console.log("Goodbye")
 	})
 	s.addListener("message", (body) => {
-
-		console.log("body:", body.toString())
+		const body = JSON.parse(body.toString())
 	})
 
 	return (
