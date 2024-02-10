@@ -1,6 +1,10 @@
-# A Game Server
+# A Terminal Based Multiplayer Game
 
-For a CLI MMORPG
+The backend is in Elixir.
+
+The frontend is in React...renderer as a CLI.
+
+Uses UDP and Phoenix.PubSub, so far.
 
 Credits:
 
