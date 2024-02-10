@@ -54,17 +54,13 @@ defmodule UdpServer do
     # close the socket
     :gen_udp.close(state.socket)
 
-    # GenServer will understand this to mean we want to stop the server
-    # action: :stop
-    # reason: :normal
-    # new_state: nil, it doesn't matter since we're shutting down :(
     {:stop, :normal, nil}
   end
 
   # fallback pattern match to handle all other (non-"quit") messages
   defp handle_packet(state, data) do
-    # print the message
-    IO.puts("Received: #{String.trim(data)}")
+    IO.inspect(data)
+    data |> String.trim() |> Jason.decode!() |> IO.inspect()
 
     :gen_udp.send(state.socket, state.address, state.port, Jason.encode!(%{hello: "world"}))
 
