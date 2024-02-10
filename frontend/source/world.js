@@ -32,7 +32,7 @@ export function World({ players }) {
         return acc
     }, [])
 
-    console.log(playersArray)
+
 
 
 

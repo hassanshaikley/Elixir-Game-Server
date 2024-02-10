@@ -8,6 +8,7 @@ import { World } from './world.js';
 import { Provider, useDispatch, useSelector } from 'react-redux'
 import store from './store.js';
 import { increment } from './counterSlice.js';
+import { addPlayer } from './playerSlice.js';
 
 
 
@@ -29,12 +30,20 @@ export default function App({ name = 'Stranger' }) {
 		const parsed = JSON.parse(b)
 		console.log(parsed)
 	})
-
-	const players = [localPlayer]
-
-	const count = useSelector((state) => state.counter.value)
 	const dispatch = useDispatch()
 
+	useEffect(() => {
+		console.log("Adding player")
+		// dispatch(addPlayer(localPlayer))
+
+	}, [])
+
+	const players = useSelector((state) => state.players.players)
+	const localPlayer = useSelector((state) => state.localPlayer)
+
+	const count = useSelector((state) => state.counter.value)
+
+	console.log(localPlayer)
 
 	useInput((input, key) => {
 
@@ -48,7 +57,7 @@ export default function App({ name = 'Stranger' }) {
 		}
 	});
 
-	console.log("Re rendering")
+	console.log("rendering")
 
 
 
