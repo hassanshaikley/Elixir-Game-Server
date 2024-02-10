@@ -1,6 +1,7 @@
 defmodule UdpServer do
   # Our module is going to use the DSL (Domain Specific Language) for Gen(eric) Servers
   use GenServer
+  alias Phoenix.PubSub
 
   # We need a factory method to create our server process
   # it takes a single parameter `port` which defaults to `2052`
@@ -18,7 +19,16 @@ defmodule UdpServer do
     #   - active: gen_udp will handle data reception, and send us a message `{:udp, socket, address, port, data}` when new data arrives on the socket
     # Returns: {:ok, socket}
     {:ok, socket} = :gen_udp.open(port, [:binary, active: true])
+
+    PubSub.subscribe(:my_pubsub, "user:123")
+
     {:ok, %{socket: socket}}
+  end
+
+  def handle_info(message, state) when is_binary(message) do
+    :gen_udp.send(state.socket, state.address, state.port, message)
+
+    {:noreply, state}
   end
 
   # define a callback handler for when gen_udp sends us a UDP packet
@@ -26,11 +36,14 @@ defmodule UdpServer do
     # punt the data to a new function that will do pattern matching
 
     :gen_udp.send(state.socket, address, port, "hello wello") |> IO.inspect(label: :sending)
+    IO.puts("Broadcasting")
+    PubSub.broadcast(:my_pubsub, "user:123", "Hell you said something")
 
     state
     |> Map.put(:address, address)
     |> Map.put(:port, port)
     |> handle_packet(data)
+    |> IO.inspect(label: :setting_state)
   end
 
   ### ALERT: you may not want to support the quit message in a production UDP server ###
@@ -56,12 +69,6 @@ defmodule UdpServer do
     :gen_udp.send(state.socket, state.address, state.port, "hello 2")
     |> IO.inspect(label: :sending)
 
-    # IRL: do something more interesting...
-
-    # GenServer will understand this to mean "continue waiting for the next message"
-    # parameters:
-    # :noreply - no reply is needed
-    # new_state: keep the socket as the current state
     {:noreply, state}
   end
 end

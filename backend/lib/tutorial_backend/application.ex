@@ -10,6 +10,7 @@ defmodule TutorialBackend.Application do
     children = [
       # Starts a worker by calling: UdpServer.Worker.start_link(arg)
       # {UdpServer.Worker, arg}
+      {Phoenix.PubSub, name: :my_pubsub},
       {UdpServer, 5355}
     ]
 
